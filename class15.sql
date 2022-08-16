@@ -1,118 +1,88 @@
-use sakila;
+USE sakila;
 
-#1 
-CREATE
-OR
-REPLACE
-    VIEW list_of_customers AS
-SELECT
-    c.customer_id,
-    CONCAT(c.first_name, ' ', c.last_name),
-    a.address,
-    a.postal_code,
-    a.phone,
-    ci.city,
-    co.country,
-    CASE
-        WHEN c.active = 1 THEN 'Active'
-        ELSE 'Inactive'
-    END 'Status'
-FROM customer c
-    INNER JOIN address a USING(address_id)
-    INNER JOIN city ci USING(city_id)
-    INNER JOIN country co USING(country_id);
+#1
 
-SELECT * FROM list_of_customers;
+CREATE OR REPLACE VIEW list_of_costumers AS
+	SELECT c.customer_id, 
+			CONCAT(c.first_name,'',c.last_name) as 'Full Name',
+            a.phone as 'Telefono',
+			a.address as 'Direccion 1',
+            a.address2 as 'Direccion 2',
+            a.postal_code as 'ZIP CODE',
+            ci.city as 'Ciudad',
+            co.country as 'Pais',
+			c.active as 'Activo',
+            c.store_id as 'N° Tienda'
+	FROM customer c
+	JOIN address a on c.address_id = a.address_id
+    JOIN city ci on a.city_id = ci.city_id
+    JOIN country co on ci.country_id = co.country_id;
+    
+#2    
 
-SELECT
-    c.customer_id,
-    CONCAT(c.first_name, ' ', c.last_name),
-    a.address,
-    a.postal_code,
-    a.phone,
-    ci.city,
-    co.country,
-    CASE
-        WHEN c.active = 1 THEN 'Active'
-        ELSE 'Inactive'
-    END 'Status'
-FROM customer c
-    INNER JOIN address a USING(address_id)
-    INNER JOIN city ci USING(city_id)
-    INNER JOIN country co USING(country_id);
-
-#2
-CREATE
-OR
-REPLACE VIEW film_details AS
-SELECT
-    f.film_id,
-    f.title,
-    f.description,
-    ca.name AS 'Category',
-    f.rental_rate AS 'Price',
-    f.length,
-    f.rating,
-    GROUP_CONCAT(
-        CONCAT(a.first_name, ' ', a.last_name)
-    ) AS 'Actors'
-FROM film f
+CREATE  
+OR REPLACE VIEW
+film_details AS
+	SELECT f.film_id,
+		   f.title,
+           f.description,
+           c.name,
+           f.length,
+           f.rating,
+           f.replacement_cost,
+           group_concat(
+           concat(a.first_name,' ',a.last_name)
+           ) AS 'Actores'
+	FROM film f 
     INNER JOIN film_category USING(film_id)
-    INNER JOIN category ca USING(category_id)
+    INNER JOIN category c USING(category_id)
     INNER JOIN film_actor USING(film_id)
     INNER JOIN actor a USING(actor_id)
-GROUP BY film_id, ca.name;
-
-SELECT * FROM film_details;
-
+	GROUP BY f.film_id, c.name;
+	;
+    
 #3
-CREATE
-OR
-REPLACE
-    VIEW sales_by_film_category AS
-SELECT
-    ca.name,
-    COUNT(r.rental_id) AS total_rental
-FROM film
-    INNER JOIN film_category USING(film_id)
-    INNER JOIN category ca USING(category_id)
-    INNER JOIN inventory USING(film_id)
-    INNER JOIN rental r USING(inventory_id)
-GROUP BY ca.name;
 
-SELECT * FROM sales_by_film_category;
-
+CREATE OR REPLACE VIEW sales_by_film_category AS
+	SELECT c.name as 'Categoria', count(r.rental_id) as 'Rentas Totales'
+    FROM film
+    JOIN film_category USING (film_id)
+    JOIN category c USING (category_id)
+    JOIN inventory USING (film_id)
+    JOIN rental r USING (inventory_id)
+    group by c.name;
+    ;
+    
 #4
-CREATE
-OR
-REPLACE
-    VIEW actor_information AS
-SELECT
-    a.actor_id,
-    CONCAT(a.first_name, ' ', a.last_name) AS 'Actor',
-    COUNT(film_id) AS 'Films Acted'
-FROM actor a
-    INNER JOIN film_actor USING(actor_id)
-    INNER JOIN film USING(film_id)
-GROUP BY a.actor_id
-ORDER BY a.last_name;
 
-SELECT * FROM actor_information;
-
+CREATE OR REPLACE VIEW actor_information AS
+	SELECT a.actor_id,
+		   a.first_name as 'Nombre',
+           a.last_name as 'Apellido',
+           count(film_id) as 'Peliculas que Participo'
+	FROM actor a
+    JOIN film_actor USING (actor_id)
+    JOIN film USING (film_id)
+    GROUP BY a.actor_id
+    ORDER BY a.actor_id
+    ;
+    
 #5
+    
 SELECT VIEW_DEFINITION
 FROM INFORMATION_SCHEMA.VIEWS
 WHERE TABLE_NAME = 'actor_info';
-
-select
+    
+   
+select										
     `a`.`actor_id` AS `actor_id`,
     `a`.`first_name` AS `first_name`,
     `a`.`last_name` AS `last_name`,
-    group_concat(
-        distinct concat(
-            `c`.`name`,
-            ': ', (
-                select
+    group_concat(								 
+        distinct concat(						
+            `c`.`name`,							
+            ': ', (								
+                select						
                     group_concat(
                         `f`.`title`
                         order by
@@ -138,9 +108,9 @@ select
         order by
             `c`.`name` ASC separator '; '
     ) AS `film_info`
-from ( ( (
-                `sakila`.`actor` `a`
-                left join `sakila`.`film_actor` `fa` on( (
+from ( ( (					
+                `sakila`.`actor` `a`							
+                left join `sakila`.`film_actor` `fa` on( (	
                         `a`.`actor_id` = `fa`.`actor_id`
                     )
                 )
