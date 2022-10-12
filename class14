@@ -1,0 +1,97 @@
+UTILIZAR sakila;
+
+# Agregar un nuevo cliente
+	# Para almacenar 1
+	# Para la dirección, use una dirección existente. El que tiene el address_id más grande en 'Estados Unidos'
+
+INSERTAR EN cliente (store_id,first_name,last_name,email,address_id,active)
+SELECCIONE
+1 , ' Franco ' , ' Casavecchia ' , ' francasavecchia@gmail.com ' , max ( a . address_id ), 1
+de la dirección a
+ciudad de unión interna ci usando (city_id)
+unión interior país co en  ci . país_id  =  co . país_id
+donde  co . país  =  ' Estados Unidos ' ;
+
+seleccione  *  del cliente donde first_name =  ' Franco ' ;
+
+# Agregar un alquiler
+	# Facilite la selección de cualquier título de película. Es decir, debería poder poner 'mosaico de película' en el lugar, y no en la identificación.
+	# No verifique si la película ya está alquilada, solo use cualquiera del inventario, por ejemplo, la que tenga la identificación más alta.
+	# Seleccione cualquier staff_id de la Tienda 2.
+seleccione  *  de alquiler;
+
+INSERTAR EN alquiler (fecha_alquiler, id_inventario, id_cliente, fecha_retorno, id_personal)
+SELECCIONE  CURRENT_TIMESTAMP , max ( i . film_id ) como inventario_id, 600 , CURRENT_TIMESTAMP , ( seleccione manager_staff_id de la tienda donde store_id =  2  límite  1 )
+DEL inventario i;
+
+seleccione  *  de alquiler donde customer_id =  600 ;
+
+
+# Actualizar el año de la película según la calificación
+	# Por ejemplo, si la calificación es 'G', la fecha de lanzamiento será '2001'
+	# Puede elegir el mapeo entre calificación y año.
+	# Escriba tantas declaraciones como sean necesarias.
+
+
+# ACTUALIZAR película
+# SET release_year = 2001 where rating = 'G';
+# ACTUALIZAR película
+# SET release_year = 2002 where rating = 'PG';
+# ACTUALIZAR película
+# SET release_year = 2003 where rating = 'PG-13';
+# ACTUALIZAR película
+# SET release_year = 2001 where rating = 'R';
+# ACTUALIZAR película
+# SET release_year = 2002 where rating = 'NC-17';
+
+# seleccione * de la película donde calificación = 'R';
+
+
+# Devolver una película
+	# Escriba las declaraciones y consultas necesarias para los siguientes pasos.
+	# Encuentre una película que aún no haya sido devuelta. Y usa esa identificación de alquiler. Elija el último que se alquiló, por ejemplo.
+	# Use la identificación para devolver la película.
+
+# ACTUALIZAR alquiler SET return_date = CURRENT_TIMESTAMP WHERE rental_id = (seleccione r.rental_id
+# 														de la película f
+# 															inventario de unión interna que uso (film_id)
+# 															alquiler de unión interna r usando (inventario_id)
+# 														donde r.return_date es nulo
+# 														pedido por r.rental_date desc
+# 														límite 1)
+# ;
+
+# Intenta borrar una película
+	# Verifique lo que sucede, describa qué hacer.
+	# Escriba todas las declaraciones de eliminación necesarias para eliminar completamente la película de la base de datos.
+    
+
+# borrar de la película donde título = 'ACADEMIA DINOSAURIO'; #Código de error: 1451. No se puede eliminar o actualizar una fila principal: falla una restricción de clave externa (`sakila`.`film_actor`, CONSTRAINT `fk_film_actor_film` FOREIGN KEY (`film_id`) REFERENCES `film` (`film_id`) ON DELETE RESTRINGIR EN CASCADA DE ACTUALIZACIÓN) 0.016 seg
+
+# Lo que sucedió y el porque no nos deja eliminar la pelicula es debido a que estas forzando a borrar un dato de una tabla hija.
+# Para resolver esto lo mas facil pero no recomendado es desactivar el fk_checks de la siguiente manera ' SET FOREIGN_KEY_CHECKS=0; '
+
+# SET FOREIGN_KEY_CHECKS=0;
+# eliminar de la película donde el título = 'ACADEMIA DE DINOSAURIO' # eliminar de la película donde el título = 'ACADEMIA DE DINOSAURIO' 1 fila(s) afectada(s) 0.031 seg
+ 
+# Pero la manera correcta para borrar una película es de la siguiente manera,borrando todas las fk desde la clase padre a la hija
+
+eliminar  del pago
+donde id_pago =  9917  y id_pago =  7340 ;
+
+eliminar  del alquiler
+donde id_inventario =  9  y  10  y  11 ;
+
+eliminar  del inventario
+donde película_id =  2 ;
+
+eliminar  de la película
+donde película_id =  2 ;
+
+seleccione  *  de la película donde film_id =  2 ;
+ 
+ # Alquila una película
+  # Encuentre una identificación de inventario que esté disponible para alquilar (disponible en la tienda) elija cualquier película. Guarde esta identificación en algún lugar.
+  # Agregar una entrada de alquiler
+  # Agregar una entrada de pago
+  # Use subconsultas para todo, excepto para la identificación del inventario que se puede usar directamente en las consultas.	
